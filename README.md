@@ -42,7 +42,19 @@ CODEX_OBSERVER_HOME=./tmp/observer-home node ./bin/codex-observer.mjs status
 codex plugin marketplace add GxFn/codex-observer
 ```
 
-安装后重启 Codex，并开一个新会话。Observer 会通过 hooks 把可见事件写入 `~/.codex-observer`，你可以用下面的命令查看：
+安装后重启 Codex，并开一个新会话。Observer 会通过 hooks 把可见事件写入 `~/.codex-observer`，并暴露 `codex-observer:observer` skill 和 MCP 工具。你可以在 Codex 里问：
+
+```text
+用 Codex Observer 看看现在在干嘛？
+```
+
+如果也想在终端直接用 CLI，进入仓库后执行：
+
+```bash
+npm link
+```
+
+然后查看：
 
 ```bash
 codex-observer status
