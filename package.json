@@ -1,0 +1,24 @@
+{
+  "name": "codex-observer",
+  "version": "0.1.0",
+  "description": "Read-only sidecar status observer for Codex agent sessions.",
+  "type": "module",
+  "bin": {
+    "codex-observer": "./bin/codex-observer.mjs"
+  },
+  "scripts": {
+    "test": "node --test",
+    "smoke": "node ./bin/codex-observer.mjs status --home ./tmp/observer-home"
+  },
+  "keywords": [
+    "codex",
+    "observer",
+    "agent",
+    "hooks",
+    "mcp"
+  ],
+  "license": "MIT",
+  "engines": {
+    "node": ">=20"
+  }
+}

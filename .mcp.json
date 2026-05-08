@@ -1,0 +1,10 @@
+{
+  "mcpServers": {
+    "codex-observer": {
+      "command": "node",
+      "args": [
+        "./mcp/server.mjs"
+      ]
+    }
+  }
+}

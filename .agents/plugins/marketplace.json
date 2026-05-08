@@ -1,0 +1,20 @@
+{
+  "name": "codex-observer-local",
+  "interface": {
+    "displayName": "Codex Observer Local"
+  },
+  "plugins": [
+    {
+      "name": "codex-observer",
+      "source": {
+        "source": "local",
+        "path": "./plugins/codex-observer"
+      },
+      "policy": {
+        "installation": "INSTALLED_BY_DEFAULT",
+        "authentication": "ON_INSTALL"
+      },
+      "category": "Productivity"
+    }
+  ]
+}
