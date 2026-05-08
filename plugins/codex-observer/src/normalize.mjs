@@ -70,6 +70,7 @@ export function normalizeHookEvent(input, options = {}) {
     ) || sessionIdFromTranscript(transcriptPath) || "unknown-session";
   const command = extractCommand(toolName, toolInput);
   const files = extractFiles(toolName, toolInput, raw);
+  const plan = extractPlan(toolName, toolInput, raw, payload);
   const exitCode = extractExitCode(toolOutput, raw, payload);
   const status = inferEventStatus(eventName, exitCode, toolOutput, raw);
   const ts = firstString(raw.timestamp, raw.ts, payload.timestamp, payload.ts) || options.now || nowIso();
@@ -77,7 +78,7 @@ export function normalizeHookEvent(input, options = {}) {
     id: stableId(ts, eventName, sessionId, toolName, command),
     ts,
     event: eventName,
-    kind: normalizeKind(eventName),
+    kind: normalizeKind(eventName, toolName),
     sessionId,
     turnId: firstString(raw.turn_id, raw.turnId, payload.turn_id, payload.turnId) || null,
     cwd: cwd || null,
@@ -85,6 +86,7 @@ export function normalizeHookEvent(input, options = {}) {
     toolName: toolName || null,
     command: command || null,
     files,
+    plan,
     status,
     exitCode,
     inputSummary: summarizeValue(toolInput, 320),
@@ -97,7 +99,8 @@ export function normalizeHookEvent(input, options = {}) {
   return normalized;
 }
 
-export function normalizeKind(eventName) {
+export function normalizeKind(eventName, toolName = "") {
+  if (isPlanTool(toolName)) return "plan_update";
   if (TOOL_START_EVENTS.has(eventName)) return "tool_start";
   if (TOOL_FINISH_EVENTS.has(eventName)) return "tool_finish";
   if (/permission/i.test(eventName)) return "permission_request";
@@ -125,7 +128,13 @@ export function summarizeEvent(event) {
   if (event.kind === "user_prompt") return "收到用户任务";
   if (event.kind === "session_start") return "会话开始";
   if (event.kind === "stop") return "当前 turn 已结束";
-  if (event.kind === "plan_update") return "更新执行计划";
+  if (event.kind === "plan_update") {
+    const items = event.plan?.items || [];
+    const active = items.find((item) => item.status === "in_progress");
+    if (active) return `更新执行计划：正在${active.step}`;
+    if (items.length > 0) return `更新执行计划：${items.length} 项`;
+    return "更新执行计划";
+  }
   return `${event.event}${event.toolName ? `：${event.toolName}` : ""}`;
 }
 
@@ -172,6 +181,25 @@ function extractFiles(toolName, toolInput, raw) {
   }
 
   return [...files];
+}
+
+function extractPlan(toolName, toolInput, raw, payload) {
+  const input = coerceObject(toolInput);
+  const rawPlan = firstArray(input.plan, raw.plan, payload.plan);
+  if (!rawPlan && !isPlanTool(toolName)) return null;
+
+  const items = (rawPlan || [])
+    .map((item) => coerceObject(item))
+    .map((item) => ({
+      step: firstString(item.step, item.title, item.name) || "",
+      status: normalizePlanStatus(firstString(item.status, item.state) || "pending"),
+    }))
+    .filter((item) => item.step);
+
+  return {
+    explanation: firstString(input.explanation, raw.explanation, payload.explanation) || null,
+    items,
+  };
 }
 
 function extractExitCode(toolOutput, raw, payload) {
@@ -225,8 +253,26 @@ function firstObjectOrValue(...values) {
   return null;
 }
 
+function firstArray(...values) {
+  for (const value of values) {
+    if (Array.isArray(value)) return value;
+  }
+  return null;
+}
+
 function isShellLikeTool(name) {
   return name.includes("exec") || name.includes("shell") || name.includes("bash") || name.includes("command");
+}
+
+function isPlanTool(toolName) {
+  return /(^|[._-])update_plan$|plan_update/i.test(String(toolName || ""));
+}
+
+function normalizePlanStatus(value) {
+  const text = String(value || "").toLowerCase();
+  if (text.includes("progress")) return "in_progress";
+  if (text.includes("complete") || text === "done") return "completed";
+  return "pending";
 }
 
 function looksLikePath(value) {

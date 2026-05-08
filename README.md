@@ -18,6 +18,10 @@ node ./bin/codex-observer.mjs status
 node ./bin/codex-observer.mjs serve --port 8765
 ```
 
+本地页面默认使用无需登录的 Observer 规则问答；右上角也保留 `API key` 入口，可以把 OpenAI 或 DeepSeek key 保存到本机配置中。配置 DeepSeek key 后，页面会优先使用 DeepSeek Chat Completion 流式回答。
+
+模型问答会带上一份只读 evidence pack：当前状态、最近事件、失败摘要、文件列表，以及结合可见计划和行为推断生成的 `routeSummary`。
+
 模拟一条 hook 事件：
 
 ```bash

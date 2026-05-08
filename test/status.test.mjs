@@ -31,6 +31,33 @@ test("normalizes hook input and records a session", async () => {
   assert.equal(events[0].command, "npm test");
 });
 
+test("normalizes update_plan tool input as structured plan evidence", () => {
+  const event = normalizeHookEvent(
+    {
+      session_id: "s-plan",
+      tool_name: "functions.update_plan",
+      tool_input: {
+        explanation: "整理路线",
+        plan: [
+          { step: "读取上下文", status: "completed" },
+          { step: "实现路线摘要", status: "in_progress" },
+          { step: "运行验证", status: "pending" },
+        ],
+      },
+    },
+    { eventName: "PostToolUse", now: "2026-05-09T00:00:00.000Z" },
+  );
+
+  assert.equal(event.kind, "plan_update");
+  assert.equal(event.plan.explanation, "整理路线");
+  assert.deepEqual(event.plan.items, [
+    { step: "读取上下文", status: "completed" },
+    { step: "实现路线摘要", status: "in_progress" },
+    { step: "运行验证", status: "pending" },
+  ]);
+  assert.match(event.summary, /实现路线摘要/);
+});
+
 test("derives status and asks about failures", () => {
   const events = [
     {

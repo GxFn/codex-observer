@@ -29,6 +29,7 @@ Collector 会尽量兼容不同 hook payload。输入可以包含这些常见字
   "toolName": "exec_command",
   "command": "npm test",
   "files": [],
+  "plan": null,
   "status": "failed",
   "exitCode": 1,
   "inputSummary": "{\"cmd\":\"npm test\"}",
@@ -38,3 +39,20 @@ Collector 会尽量兼容不同 hook payload。输入可以包含这些常见字
 ```
 
 `raw` 字段也会保留原始 payload，方便未来补充更精确的解释器。
+
+当 hook 捕获到 `update_plan` 工具或 plan 类事件时，collector 会把计划条目结构化保存到 `plan` 字段：
+
+```json
+{
+  "kind": "plan_update",
+  "summary": "更新执行计划：正在运行验证",
+  "plan": {
+    "explanation": "整理执行路线",
+    "items": [
+      { "step": "读取上下文", "status": "completed" },
+      { "step": "实现路线摘要", "status": "in_progress" },
+      { "step": "运行验证", "status": "pending" }
+    ]
+  }
+}
+```

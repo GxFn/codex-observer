@@ -34,7 +34,9 @@ CODEX_OBSERVER_HOME=./tmp/demo node ./bin/codex-observer.mjs timeline --limit 10
 CODEX_OBSERVER_HOME=./tmp/demo node ./bin/codex-observer.mjs serve --port 8765
 ```
 
-打开 `http://127.0.0.1:8765` 可以看到状态、风险、改动文件和最近 timeline，并且可以在页面里询问状态。
+打开 `http://127.0.0.1:8765` 可以看到当前状态、最近 timeline，并且可以在页面里询问状态。右上角的 `API key` 入口可以保存 OpenAI 或 DeepSeek key；key 只保存在本地 `CODEX_OBSERVER_HOME/settings.json`，接口返回时只暴露脱敏配置状态。配置 DeepSeek key 后，页面会优先通过 DeepSeek Chat Completion 流式回答；未配置或 provider 未支持时回退到本地规则问答。
+
+模型问答会收到一份只读 evidence pack，其中包含当前状态、最近事件、失败摘要、文件列表，以及 `routeSummary`。`routeSummary` 会合并可见的 `update_plan` 条目和从命令/编辑/测试事件推断出的路线摘要，用来回答“当前 agent 在做什么、计划是什么、接下来可能做什么”。
 
 ## MCP 工具
 
