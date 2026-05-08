@@ -36,6 +36,26 @@ CODEX_OBSERVER_HOME=./tmp/observer-home node ./bin/codex-observer.mjs status
 
 更多本地验证步骤见 [docs/getting-started.md](./docs/getting-started.md)，事件规范见 [docs/event-format.md](./docs/event-format.md)。
 
+## 作为 Codex 插件安装
+
+```bash
+codex plugin marketplace add GxFn/codex-observer
+```
+
+安装后重启 Codex，并开一个新会话。Observer 会通过 hooks 把可见事件写入 `~/.codex-observer`，你可以用下面的命令查看：
+
+```bash
+codex-observer status
+codex-observer ask "现在 Codex 在干嘛？"
+codex-observer timeline --limit 20
+```
+
+如果想先用本地仓库安装：
+
+```bash
+codex plugin marketplace add /Users/gaoxuefeng/Documents/github/codex-observer
+```
+
 ## 插件结构
 
 ```text
