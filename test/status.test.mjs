@@ -92,7 +92,10 @@ test("flags a long-running active tool as possibly stuck", () => {
   const status = buildStatus(events, { now: "2026-05-08T00:05:30.000Z" });
   const answer = answerQuestion("是不是卡住了？", status, events);
 
-  assert.equal(status.state, "testing");
+  assert.equal(status.state, "blocked");
+  assert.equal(status.stateLabel, "疑似卡住");
+  assert.equal(status.confidence, "low");
   assert.equal(status.isPossiblyStuck, true);
+  assert.match(status.nextLikelyStep, /terminal/);
   assert.match(answer, /卡住迹象/);
 });

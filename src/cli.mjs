@@ -1,4 +1,5 @@
 import http from "node:http";
+import { readPackageVersion } from "./config.mjs";
 import { appendEvent, listSessions, readSessionEvents } from "./event-store.mjs";
 import { normalizeHookEvent } from "./normalize.mjs";
 import { answerQuestion } from "./ask.mjs";
@@ -7,6 +8,11 @@ import { buildStatus } from "./status.mjs";
 
 export async function runCli(argv) {
   const { command, args, options } = parseArgs(argv);
+
+  if (command === "version" || options.version) {
+    console.log(await readPackageVersion());
+    return;
+  }
 
   if (!command || command === "help" || options.help) {
     printHelp();
@@ -79,6 +85,7 @@ export function parseArgs(argv) {
     if (value === "--json") options.json = true;
     else if (value === "--quiet") options.quiet = true;
     else if (value === "--help" || value === "-h") options.help = true;
+    else if (value === "--version" || value === "-v") options.version = true;
     else if (value === "--home") options.home = argv[++index];
     else if (value === "--session") options.sessionId = argv[++index];
     else if (value === "--limit") options.limit = argv[++index];
@@ -121,8 +128,28 @@ async function serve(options) {
     }
   });
 
-  await new Promise((resolve) => server.listen(port, "127.0.0.1", resolve));
+  await listen(server, port);
   console.log(`Codex Observer listening at http://127.0.0.1:${port}`);
+}
+
+async function listen(server, port) {
+  try {
+    await new Promise((resolve, reject) => {
+      server.once("error", reject);
+      server.listen(port, "127.0.0.1", () => {
+        server.off("error", reject);
+        resolve();
+      });
+    });
+  } catch (error) {
+    if (error?.code === "EADDRINUSE") {
+      throw new Error(`Port ${port} is already in use. Try: codex-observer serve --port ${port + 1}`);
+    }
+    if (error?.code === "EACCES" || error?.code === "EPERM") {
+      throw new Error(`Cannot listen on 127.0.0.1:${port}: ${error.message}`);
+    }
+    throw error;
+  }
 }
 
 function json(response, value) {
@@ -239,6 +266,7 @@ Usage:
   codex-observer timeline              Print recent events
   codex-observer sessions              List known sessions
   codex-observer serve --port 8765      Start local read-only dashboard
+  codex-observer version               Print CLI version
 
 Options:
   --home <dir>       Override observer store (default: ~/.codex-observer)
@@ -246,5 +274,6 @@ Options:
   --json             Print JSON
   --quiet            Suppress capture output for hook usage
   --limit <n>        Timeline event limit
+  --version, -v      Print CLI version
 `);
 }

@@ -42,7 +42,7 @@ export function buildStatus(events, options = {}) {
     sessionId: events[0]?.sessionId || null,
     state,
     stateLabel: stateLabels[state] || state,
-    confidence: inferConfidence(events, activeTool, idleMs),
+    confidence: inferConfidence(events, activeTool, idleMs, options),
     isPossiblyStuck: risks.some((risk) => risk.includes("卡住")),
     eventCount: events.length,
     lastEventAt: last?.ts || null,
@@ -86,10 +86,10 @@ function inferState({ events, last, activeTool, lastFailure, permission, idleMs,
   if (!last) return "idle";
   if (last.kind === "stop") return "done";
   if (permission && permission === last) return "waiting_permission";
-  if (activeTool) return stateFromTool(activeTool);
   if (idleMs != null && idleMs > (options.stuckAfterMs || DEFAULT_STUCK_AFTER_MS) && last.kind !== "stop") {
     return "blocked";
   }
+  if (activeTool) return stateFromTool(activeTool);
   if (lastFailure && events.slice(-3).includes(lastFailure)) return "debugging";
   if (last.kind === "user_prompt" || last.kind === "plan_update") return "planning";
   if (last.kind === "tool_finish" && last.status === "succeeded") return stateFromTool(last);
@@ -130,14 +130,17 @@ function detectRepeatedFailures(events) {
     .map(([label, count]) => ({ label, count }));
 }
 
-function inferConfidence(events, activeTool, idleMs) {
+function inferConfidence(events, activeTool, idleMs, options = {}) {
+  const stuckAfterMs = options.stuckAfterMs || DEFAULT_STUCK_AFTER_MS;
   if (events.length === 0) return "low";
-  if (activeTool || idleMs == null || idleMs < DEFAULT_STUCK_AFTER_MS) return "medium";
+  if (idleMs != null && idleMs > stuckAfterMs) return "low";
+  if (activeTool || idleMs == null || idleMs < stuckAfterMs) return "medium";
   return "low";
 }
 
 function inferNextStep({ state, lastFailure, changedFiles, recentCommand }) {
   if (state === "waiting_permission") return "等待用户批准或拒绝权限请求。";
+  if (state === "blocked") return "查看最近 terminal 输出、权限请求或长时间运行的命令，再决定是否中断。";
   if (state === "debugging" && lastFailure) return "根据失败输出定位问题，随后再次运行相关测试或检查。";
   if (state === "testing" && lastFailure) return "根据失败输出定位问题，随后再次运行相关测试。";
   if (state === "editing") return "继续完成当前文件修改，然后查看 diff 或运行验证。";

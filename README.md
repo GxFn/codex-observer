@@ -40,9 +40,10 @@ CODEX_OBSERVER_HOME=./tmp/observer-home node ./bin/codex-observer.mjs status
 
 ```bash
 codex plugin marketplace add GxFn/codex-observer
+codex plugin marketplace upgrade codex-observer
 ```
 
-安装后重启 Codex，并开一个新会话。Observer 会通过 hooks 把可见事件写入 `~/.codex-observer`，并暴露 `codex-observer:observer` skill 和 MCP 工具。你可以在 Codex 里问：
+如果已经添加过 marketplace，只运行第二条 upgrade 即可。安装后重启 Codex，并开一个新会话。Observer 会通过 hooks 把可见事件写入 `~/.codex-observer`，并暴露 `codex-observer:observer` skill 和 MCP 工具。你可以在 Codex 里问：
 
 ```text
 用 Codex Observer 看看现在在干嘛？

@@ -1,6 +1,7 @@
 #!/usr/bin/env node
 import readline from "node:readline";
 import { answerQuestion } from "../src/ask.mjs";
+import { readPackageVersion } from "../src/config.mjs";
 import { readSessionEvents } from "../src/event-store.mjs";
 import { formatStatus, formatTimeline } from "../src/format.mjs";
 import { buildStatus } from "../src/status.mjs";
@@ -67,10 +68,11 @@ rl.on("line", async (line) => {
 async function handleRequest(request) {
   if (request.method === "notifications/initialized") return null;
   if (request.method === "initialize") {
+    const version = await readPackageVersion();
     return response(request.id, {
       protocolVersion: request.params?.protocolVersion || "2024-11-05",
       capabilities: { tools: {} },
-      serverInfo: { name: "codex-observer", version: "0.1.0" },
+      serverInfo: { name: "codex-observer", version },
     });
   }
   if (request.method === "tools/list") {
