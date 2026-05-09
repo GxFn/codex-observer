@@ -16,7 +16,7 @@ Use this skill when the user wants a non-interrupting status check on the curren
    - "刚才为什么运行这个命令？"
    - "已经改了哪些文件？"
 3. Use `codex_observer_timeline` when the user asks for recent evidence or event history.
-4. Use `codex_observer_dashboard` when the user asks to open the Observer panel, chat, dashboard, or right-side page. It starts the localhost dashboard and returns the URL; if the Browser plugin is available, open that URL in the Codex in-app browser.
+4. Use `codex_observer_dashboard` when the user asks to open the Observer panel, chat, dashboard, or right-side page. Plugin hooks auto-start the localhost dashboard on `SessionStart`, and this tool ensures it is running and returns the URL; if the Browser plugin is available, open that URL in the Codex in-app browser.
 5. If MCP tools are unavailable, fall back to the local CLI:
 
 ```bash

@@ -5,7 +5,7 @@ import { readPackageVersion } from "../src/config.mjs";
 import { readSessionEvents } from "../src/event-store.mjs";
 import { formatStatus, formatTimeline } from "../src/format.mjs";
 import { buildStatus } from "../src/status.mjs";
-import { startDashboardServer } from "../src/cli.mjs";
+import { ensureDashboardProcess } from "../src/dashboard.mjs";
 
 const tools = [
   {
@@ -100,12 +100,17 @@ async function handleRequest(request) {
 
 async function callTool(name, args) {
   if (name === "codex_observer_dashboard") {
-    const dashboard = await startDashboardServer({ home: args.home, port: Number(args.port || 8765) });
+    const dashboard = await ensureDashboardProcess({ home: args.home, port: args.port });
     return textContent(
       [
-        `Codex Observer dashboard is running at ${dashboard.url}`,
+        dashboard.ready
+          ? `Codex Observer dashboard is running at ${dashboard.url}`
+          : `Codex Observer dashboard was requested at ${dashboard.url}`,
+        dashboard.message,
         "Open that URL in the Codex in-app browser/right panel to use the streaming Observer chat.",
-      ].join("\n"),
+      ]
+        .filter(Boolean)
+        .join("\n"),
     );
   }
 
