@@ -51,7 +51,7 @@ codex plugin marketplace upgrade codex-observer
 
 如果已经添加过 marketplace，只运行第二条 upgrade 即可。安装后重启 Codex，并开一个新会话。Observer 会通过 hooks 把可见事件写入 `~/.codex-observer`，并在 `SessionStart` 时自动启动 `http://127.0.0.1:8765/` 本地面板服务。
 
-带上插件会自动启动服务，但当前 Codex 插件 API 还不能强制弹出右侧网页；需要让 Codex 打开面板时可以问：
+带上插件会自动启动服务，但当前 Codex 插件 API 还不能强制弹出右侧网页；要真正打开面板，需要同一轮里有 Browser 插件把 Codex in-app browser 导航到本地 URL。可以问：
 
 ```text
 打开 Codex Observer 面板
@@ -108,7 +108,7 @@ src/                       # event store、状态推断、问答和格式化
 
 ## 边界
 
-Observer 只解释可见证据：hook 事件、命令、文件条目、输出摘要、权限请求和 stop 事件。它不会读取隐藏 chain-of-thought，也不会自动中断或控制主 agent。当前 Codex 插件 manifest 不会在“带上插件”时自动展示 Web 面板；插件会自动启动服务，面板仍需要通过 `codex_observer_dashboard` / 右侧浏览器打开。
+Observer 只解释可见证据：hook 事件、命令、文件条目、输出摘要、权限请求和 stop 事件。它不会读取隐藏 chain-of-thought，也不会自动中断或控制主 agent。当前 Codex 插件 manifest 不会在“带上插件”时自动展示 Web 面板；插件会自动启动服务，面板仍需要通过 `codex_observer_dashboard` 启动/确认服务，再由 Browser 插件打开右侧浏览器。只有真正完成浏览器导航后，agent 才应该说“面板已打开”。
 
 如果不想自动启动本地面板服务，可以在启动 Codex 时设置：
 

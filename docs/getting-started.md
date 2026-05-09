@@ -50,4 +50,4 @@ CODEX_OBSERVER_HOME=./tmp/demo node ./bin/codex-observer.mjs serve --port 8765
 - `codex_observer_timeline`
 - `codex_observer_dashboard`
 
-这些工具适合给独立 Observer Agent 调用。前三个只读取本地 timeline，不会向主 coding agent 发送消息；`codex_observer_dashboard` 会启动本地 Chat 面板服务并返回 URL。Codex 目前不会因为带上插件就自动弹出右侧网页，所以需要让 agent 显式打开这个 URL。
+这些工具适合给独立 Observer Agent 调用。前三个只读取本地 timeline，不会向主 coding agent 发送消息；`codex_observer_dashboard` 会启动本地 Chat 面板服务并返回 URL，但它不会自己打开 Codex 右侧浏览器。要真正打开面板，agent 还需要在同一 turn 里使用 Browser 插件把 Codex in-app browser 导航到这个 URL；如果当前会话没有 Browser 插件，就只能报告服务已就绪并给出 URL。

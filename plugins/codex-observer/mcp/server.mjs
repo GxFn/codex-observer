@@ -46,7 +46,7 @@ const tools = [
   },
   {
     name: "codex_observer_dashboard",
-    description: "Start the local Codex Observer chat dashboard and return its localhost URL.",
+    description: "Start the local Codex Observer chat dashboard service and return its localhost URL. This tool does not open the Codex UI or browser panel by itself.",
     inputSchema: {
       type: "object",
       properties: {
@@ -104,10 +104,11 @@ async function callTool(name, args) {
     return textContent(
       [
         dashboard.ready
-          ? `Codex Observer dashboard is running at ${dashboard.url}`
-          : `Codex Observer dashboard was requested at ${dashboard.url}`,
+          ? `Codex Observer dashboard service is running at ${dashboard.url}`
+          : `Codex Observer dashboard service was requested at ${dashboard.url}`,
         dashboard.message,
-        "Open that URL in the Codex in-app browser/right panel to use the streaming Observer chat.",
+        "This MCP tool did not open a browser or right panel.",
+        "If the Browser plugin is available, navigate the Codex in-app browser to that URL before saying the panel is opened. Otherwise, tell the user only that the service is ready and provide the URL.",
       ]
         .filter(Boolean)
         .join("\n"),
