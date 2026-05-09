@@ -5,6 +5,7 @@ import { readPackageVersion } from "../src/config.mjs";
 import { readSessionEvents } from "../src/event-store.mjs";
 import { formatStatus, formatTimeline } from "../src/format.mjs";
 import { buildStatus } from "../src/status.mjs";
+import { startDashboardServer } from "../src/cli.mjs";
 
 const tools = [
   {
@@ -40,6 +41,17 @@ const tools = [
         limit: { type: "number", default: 20 },
         sessionId: { type: "string" },
         home: { type: "string" },
+      },
+    },
+  },
+  {
+    name: "codex_observer_dashboard",
+    description: "Start the local Codex Observer chat dashboard and return its localhost URL.",
+    inputSchema: {
+      type: "object",
+      properties: {
+        port: { type: "number", default: 8765 },
+        home: { type: "string", description: "Optional observer store directory." },
       },
     },
   },
@@ -87,6 +99,16 @@ async function handleRequest(request) {
 }
 
 async function callTool(name, args) {
+  if (name === "codex_observer_dashboard") {
+    const dashboard = await startDashboardServer({ home: args.home, port: Number(args.port || 8765) });
+    return textContent(
+      [
+        `Codex Observer dashboard is running at ${dashboard.url}`,
+        "Open that URL in the Codex in-app browser/right panel to use the streaming Observer chat.",
+      ].join("\n"),
+    );
+  }
+
   const { events } = await readSessionEvents({ home: args.home, sessionId: args.sessionId });
   const status = buildStatus(events);
   if (name === "codex_observer_status") {

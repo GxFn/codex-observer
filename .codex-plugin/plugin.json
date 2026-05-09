@@ -19,7 +19,7 @@
   "interface": {
     "displayName": "Codex Observer",
     "shortDescription": "Ask what Codex is doing without interrupting it.",
-    "longDescription": "Codex Observer records visible Codex hook events into a local timeline and exposes read-only status, timeline, and ask tools for a sidecar observer agent.",
+    "longDescription": "Codex Observer records visible Codex hook events into a local timeline and exposes read-only status, timeline, ask, and dashboard tools for a sidecar observer agent.",
     "developerName": "Codex Observer Contributors",
     "category": "Productivity",
     "capabilities": [
@@ -27,6 +27,7 @@
       "Interactive"
     ],
     "defaultPrompt": [
+      "打开 Codex Observer 面板",
       "现在 Codex 在做什么？",
       "它是不是卡住了？",
       "刚才为什么运行这个命令？"

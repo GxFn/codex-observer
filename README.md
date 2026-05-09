@@ -8,6 +8,7 @@ Codex Observer 是一个只读旁路观察器，用来回答“Codex 现在在�
 - 用 `codex-observer status` 摘要当前状态。
 - 用 `codex-observer ask "现在在干嘛？"` 基于证据回答自然语言问题。
 - 通过 MCP 暴露 `status`、`ask`、`timeline`，方便独立 Observer Agent 调用。
+- 通过 MCP 的 `dashboard` 入口启动本地 Chat 面板，并返回可在 Codex 右侧浏览器打开的 URL。
 - 默认只读，不中断、不改写、不向主 agent 发送指令。
 
 ## 快速试用
@@ -47,7 +48,13 @@ codex plugin marketplace add GxFn/codex-observer
 codex plugin marketplace upgrade codex-observer
 ```
 
-如果已经添加过 marketplace，只运行第二条 upgrade 即可。安装后重启 Codex，并开一个新会话。Observer 会通过 hooks 把可见事件写入 `~/.codex-observer`，并暴露 `codex-observer:observer` skill 和 MCP 工具。你可以在 Codex 里问：
+如果已经添加过 marketplace，只运行第二条 upgrade 即可。安装后重启 Codex，并开一个新会话。Observer 会通过 hooks 把可见事件写入 `~/.codex-observer`，并暴露 `codex-observer:observer` skill 和 MCP 工具。带上插件只会启用工具，不会自动弹出右侧网页；需要让 Codex 打开面板时可以问：
+
+```text
+打开 Codex Observer 面板
+```
+
+也可以直接问状态：
 
 ```text
 用 Codex Observer 看看现在在干嘛？
@@ -98,6 +105,6 @@ src/                       # event store、状态推断、问答和格式化
 
 ## 边界
 
-Observer 只解释可见证据：hook 事件、命令、文件条目、输出摘要、权限请求和 stop 事件。它不会读取隐藏 chain-of-thought，也不会自动中断或控制主 agent。
+Observer 只解释可见证据：hook 事件、命令、文件条目、输出摘要、权限请求和 stop 事件。它不会读取隐藏 chain-of-thought，也不会自动中断或控制主 agent。当前 Codex 插件 manifest 不会在“带上插件”时自动展示 Web 面板；面板需要通过 `codex_observer_dashboard` / `codex-observer serve` 显式启动，再在右侧浏览器打开。
 
 更完整的产品和架构记录见 [docs/codex-observer-agent-design.md](./docs/codex-observer-agent-design.md)。

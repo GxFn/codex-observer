@@ -8,6 +8,8 @@ import { formatStatus, formatTimeline } from "./format.mjs";
 import { buildStatus } from "./status.mjs";
 import { publicSettings, readSettings, saveProviderSettings } from "./settings.mjs";
 
+const dashboardServers = new Map();
+
 export async function runCli(argv) {
   const { command, args, options } = parseArgs(argv);
 
@@ -100,8 +102,12 @@ export function parseArgs(argv) {
   return { command, args, options };
 }
 
-async function serve(options) {
+export async function startDashboardServer(options = {}) {
   const port = options.port || 8765;
+  const key = `${options.home || ""}:${port}`;
+  const active = dashboardServers.get(key);
+  if (active?.server?.listening) return active;
+
   const server = http.createServer(async (request, response) => {
     try {
       const url = new URL(request.url, `http://${request.headers.host || "localhost"}`);
@@ -141,7 +147,14 @@ async function serve(options) {
   });
 
   await listen(server, port);
-  console.log(`Codex Observer listening at http://127.0.0.1:${port}`);
+  const dashboard = { server, port, url: `http://127.0.0.1:${port}/` };
+  dashboardServers.set(key, dashboard);
+  return dashboard;
+}
+
+async function serve(options) {
+  const dashboard = await startDashboardServer(options);
+  console.log(`Codex Observer listening at ${dashboard.url}`);
 }
 
 async function chat(response, body, options) {
