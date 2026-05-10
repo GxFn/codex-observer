@@ -1,4 +1,5 @@
 import http from "node:http";
+import { buildObserverAgentBrief } from "./agent-brief.mjs";
 import { readPackageVersion } from "./config.mjs";
 import { appendEvent, listSessions, readSessionEvents } from "./event-store.mjs";
 import { normalizeHookEvent } from "./normalize.mjs";
@@ -56,6 +57,17 @@ export async function runCli(argv) {
     return;
   }
 
+  if (command === "agent-brief") {
+    const brief = buildObserverAgentBrief({
+      home: options.home,
+      sessionId: options.sessionId,
+      dashboardUrl: options.dashboardUrl,
+    });
+    if (options.json) console.log(JSON.stringify({ brief }, null, 2));
+    else console.log(brief);
+    return;
+  }
+
   if (command === "timeline") {
     const { events } = await readSessionEvents(options);
     if (options.json) console.log(JSON.stringify(events.slice(-Number(options.limit || 20)), null, 2));
@@ -95,6 +107,7 @@ export function parseArgs(argv) {
     else if (value === "--limit") options.limit = argv[++index];
     else if (value === "--port") options.port = Number(argv[++index]);
     else if (value === "--event") options.event = argv[++index];
+    else if (value === "--dashboard-url") options.dashboardUrl = argv[++index];
     else if (!command) command = value;
     else args.push(value);
   }
@@ -596,6 +609,7 @@ Usage:
   codex-observer capture [EventName]   Record one hook event from stdin JSON
   codex-observer status                Print current observer status
   codex-observer ask "现在在干嘛？"       Answer from visible evidence
+  codex-observer agent-brief           Print a prompt for a read-only Observer sub-agent
   codex-observer timeline              Print recent events
   codex-observer sessions              List known sessions
   codex-observer serve --port 8765      Start local read-only dashboard
@@ -607,6 +621,8 @@ Options:
   --json             Print JSON
   --quiet            Suppress capture output for hook usage
   --limit <n>        Timeline event limit
+  --dashboard-url <url>
+                     Include a dashboard URL in agent-brief output
   --version, -v      Print CLI version
 `);
 }

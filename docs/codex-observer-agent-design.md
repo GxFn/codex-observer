@@ -146,9 +146,44 @@ Observer UI / CLI / MCP
   ├─ status timeline
   ├─ current state card
   ├─ ask box
+  ├─ sub-agent launch brief
   ├─ intervention controls
   └─ optional Alembic enrichment
 ```
+
+### 子 agent 接入
+
+“用子 agent 方式实现 Observer”最稳的边界是：Observer 插件负责采集和证据整理，Codex 子 agent 负责解释这些证据并与用户对话。
+
+插件不假设自己能直接调用 Codex runtime 的内部 `spawn_agent` 能力。相反，它暴露一份标准启动说明：
+
+- CLI：`codex-observer agent-brief`
+- MCP：`codex_observer_agent_brief`
+
+主 coding agent 在支持子 agent 的环境中读取这份 brief，再启动一个只读 Observer 子 agent。这个子 agent 的首选证据源仍然是 `codex_observer_status`、`codex_observer_timeline` 和 `codex_observer_ask`，而不是直接读原始 hook payload 或重做状态推断。
+
+推荐分层：
+
+```text
+Main Codex Agent
+  └─ continues coding work
+
+Codex Hooks
+  └─ write visible events
+
+Codex Observer Plugin
+  ├─ normalize events
+  ├─ build deterministic status
+  ├─ expose read-only MCP tools
+  └─ generate Observer sub-agent brief
+
+Observer Sub-agent
+  ├─ reads status/timeline/ask tools
+  ├─ answers user questions in a separate conversation
+  └─ suggests intervention only after explicit user confirmation
+```
+
+这样保留了子 agent 的对话体验，但不会把子 agent 变成“更高权限的主 agent 影子”。它看到的是可见证据，不是主 agent 的隐藏思考；它的价值是解释、压缩和预警，而不是控制。
 
 ### 事件采集
 

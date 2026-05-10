@@ -9,6 +9,7 @@ Codex Observer 是一个只读旁路观察器，用来回答“Codex 现在在�
 - 用 `codex-observer status` 摘要当前状态。
 - 用 `codex-observer ask "现在在干嘛？"` 基于证据回答自然语言问题。
 - 通过 MCP 暴露 `status`、`ask`、`timeline`，方便独立 Observer Agent 调用。
+- 通过 `agent-brief` / `codex_observer_agent_brief` 生成只读子 agent 启动说明，让支持 sub-agent 的 Codex 环境把 Observer 作为旁路 agent 拉起。
 - 通过 MCP 的 `dashboard` 入口启动本地 Chat 面板，并返回可在 Codex 右侧浏览器打开的 URL。
 - 默认只读，不中断、不改写、不向主 agent 发送指令。
 
@@ -18,6 +19,7 @@ Codex Observer 是一个只读旁路观察器，用来回答“Codex 现在在�
 npm test
 node ./bin/codex-observer.mjs status
 node ./bin/codex-observer.mjs serve --port 8765
+node ./bin/codex-observer.mjs agent-brief
 ```
 
 本地页面默认使用无需登录的 Observer 规则问答；右上角也保留 `API key` 入口，可以把 OpenAI 或 DeepSeek key 保存到本机配置中。配置 DeepSeek key 后，页面会优先使用 DeepSeek Chat Completion 流式回答。
@@ -105,6 +107,21 @@ src/                       # event store、状态推断、问答和格式化
 - 我现在是否应该介入？
 
 回答会明确说明依据，并避免声称读取主模型的隐藏思考。
+
+## 子 agent 模式
+
+Codex Observer 可以用“子 agent 方式”运行，但边界是：插件本身不直接创建 Codex 内部子 agent；它提供一份标准 brief，让主 Codex agent 在支持 sub-agent 的运行时里拉起一个只读 Observer。
+
+```bash
+codex-observer agent-brief --session <session-id>
+```
+
+MCP 中对应工具是 `codex_observer_agent_brief`。推荐流程是：
+
+1. hooks 继续负责记录主 agent 的可见事件。
+2. Observer 子 agent 使用 `codex_observer_status`、`codex_observer_timeline`、`codex_observer_ask` 查询证据。
+3. 用户把“现在在干嘛 / 是否卡住 / 为什么跑这个命令”这类问题发给 Observer 子 agent，而不是发进主 coding thread。
+4. 子 agent 默认只读；任何中断或转发给主 agent 的动作都需要用户明确确认。
 
 ## 边界
 

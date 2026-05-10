@@ -1,5 +1,6 @@
 #!/usr/bin/env node
 import readline from "node:readline";
+import { buildObserverAgentBrief } from "../src/agent-brief.mjs";
 import { answerQuestion } from "../src/ask.mjs";
 import { readPackageVersion } from "../src/config.mjs";
 import { readSessionEvents } from "../src/event-store.mjs";
@@ -52,6 +53,18 @@ const tools = [
       properties: {
         port: { type: "number", default: 8765 },
         home: { type: "string", description: "Optional observer store directory." },
+      },
+    },
+  },
+  {
+    name: "codex_observer_agent_brief",
+    description: "Return a prompt for launching a read-only Codex Observer sub-agent that uses Observer evidence without interrupting the main agent.",
+    inputSchema: {
+      type: "object",
+      properties: {
+        sessionId: { type: "string", description: "Optional session id the Observer sub-agent should inspect." },
+        home: { type: "string", description: "Optional observer store directory." },
+        dashboardUrl: { type: "string", description: "Optional dashboard URL to include in the brief." },
       },
     },
   },
@@ -112,6 +125,16 @@ async function callTool(name, args) {
       ]
         .filter(Boolean)
         .join("\n"),
+    );
+  }
+
+  if (name === "codex_observer_agent_brief") {
+    return textContent(
+      buildObserverAgentBrief({
+        home: args.home,
+        sessionId: args.sessionId,
+        dashboardUrl: args.dashboardUrl,
+      }),
     );
   }
 
